@@ -1,0 +1,33 @@
+name: Docker Image Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      n8n_version:
+        description: 'N8N version'
+        required: true
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+    - name: Build the Docker image
+      uses: docker/build-push-action@v6.7.0
+      with:
+        context: ./docker/images
+        push: true
+        build-args: N8N_VERSION=${{ github.event.inputs.n8n_version }}
+        tags: |
+          ${{ secrets.DOCKERHUB_USERNAME }}/n8n-with-helm:${{ github.event.inputs.n8n_version }}
+          ${{ secrets.DOCKERHUB_USERNAME }}/n8n-with-helm:latest
